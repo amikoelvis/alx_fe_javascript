@@ -3,8 +3,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const quoteDisplay = document.getElementById("quoteDisplay");
     const newQuoteButton = document.getElementById("newQuote");
 
-    // Array to store quotes with their categories
-    const quotes = [
+    // Load quotes from localStorage or use a default set
+    let quotes = JSON.parse(localStorage.getItem("quotes")) || [
         { text: "Believe in yourself.", category: "Motivation" },
         { text: "Knowledge is power.", category: "Wisdom" },
         { text: "Success is a journey, not a destination.", category: "Success" },
@@ -18,7 +18,11 @@ document.addEventListener("DOMContentLoaded", function () {
     function showRandomQuote() {
         if (quotes.length > 0) {
             const randomIndex = Math.floor(Math.random() * quotes.length);
-            quoteDisplay.innerHTML = `"${quotes[randomIndex].text}" - ${quotes[randomIndex].category}`;
+            const selectedQuote = quotes[randomIndex];
+            quoteDisplay.innerHTML = `"${selectedQuote.text}" - ${selectedQuote.category}`;
+
+            // Save the last viewed quote index in sessionStorage (optional)
+            sessionStorage.setItem('lastViewedQuote', JSON.stringify(selectedQuote));
         } else {
             quoteDisplay.innerHTML = "No quotes available.";
         }
@@ -68,6 +72,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Add the new quote to the array
                 quotes.push({ text: newQuoteText, category: newQuoteCategory });
 
+                // Save updated quotes to localStorage
+                localStorage.setItem("quotes", JSON.stringify(quotes));
+
                 // Notify the user
                 alert("Quote added successfully!");
 
@@ -84,15 +91,48 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Event listener for form submission
         form.addEventListener("submit", function (event) {
-            event.preventDefault(); // Fix: Added missing parentheses
-            addQuote(); // Fix: Call the addQuote function inside event listener
+            event.preventDefault(); // Prevent default form submission
+            addQuote(); // Add the quote to the array
         });
     }
 
     // Event listener for the "Show New Quote" button
     newQuoteButton.addEventListener("click", showRandomQuote);
 
-    // Initialize the quote generator by creating the form and showing a quote on page load
+    // Export quotes to a JSON file
+    window.exportToJsonFile = function () {
+        const blob = new Blob([JSON.stringify(quotes, null, 2)], { type: "application/json" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "quotes.json";
+        link.click();
+    };
+
+    // Import quotes from a JSON file
+    window.importFromJsonFile = function (event) {
+        const fileReader = new FileReader();
+        fileReader.onload = function (event) {
+            try {
+                const importedQuotes = JSON.parse(event.target.result);
+                if (Array.isArray(importedQuotes)) {
+                    quotes = importedQuotes;
+                    // Save imported quotes to localStorage
+                    localStorage.setItem("quotes", JSON.stringify(quotes));
+                    showRandomQuote();
+                    alert("Quotes imported successfully!");
+                } else {
+                    alert("Invalid JSON format.");
+                }
+            } catch (error) {
+                alert("Failed to parse JSON file.");
+            }
+        };
+        fileReader.readAsText(event.target.files[0]);
+    };
+
+    // Create the form to add a quote
     createAddQuoteForm();
+
+    // Initialize by showing a random quote
     showRandomQuote();
 });
