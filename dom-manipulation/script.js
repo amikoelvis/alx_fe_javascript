@@ -18,9 +18,9 @@ document.addEventListener("DOMContentLoaded", function () {
     function showRandomQuote() {
         if (quotes.length > 0) {
             const randomIndex = Math.floor(Math.random() * quotes.length);
-            quoteDisplay.textContent = `"${quotes[randomIndex].text}" - ${quotes[randomIndex].category}`;
+            quoteDisplay.innerHTML = `"${quotes[randomIndex].text}" - ${quotes[randomIndex].category}`;
         } else {
-            quoteDisplay.textContent = "No quotes available.";
+            quoteDisplay.innerHTML = "No quotes available.";
         }
     }
 
