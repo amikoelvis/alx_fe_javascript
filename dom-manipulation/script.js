@@ -209,9 +209,27 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    /**
+     * Export quotes to a JSON file
+     */
+    function exportToJsonFile() {
+        const dataStr = JSON.stringify(quotes, null, 2);  // Stringify with indentation
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);  // Create URL for the blob
+        link.download = "quotes.json";  // Set default download file name
+        link.click();  // Programmatically click the link to trigger download
+    }
+
     // Event listeners for interactions
     newQuoteButton.addEventListener("click", showRandomQuote);
     categoryFilter.addEventListener("change", filterQuotes);
+
+    // Create export button for JSON file
+    const exportButton = document.createElement("button");
+    exportButton.textContent = "Export Quotes to JSON";
+    exportButton.addEventListener("click", exportToJsonFile);  // Trigger export function
+    document.body.appendChild(exportButton);  // Append the export button to the page
 
     // Initialize categories and start syncing
     populateCategories();
