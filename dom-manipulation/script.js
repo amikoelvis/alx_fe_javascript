@@ -155,6 +155,13 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    /**
+     * Sync quotes function (Reintroduced as per request)
+     */
+    function syncQuotes() {
+        fetchQuotesFromServer();  // Calls fetchQuotesFromServer for syncing
+    }
+
     // Event listeners for interactions
     newQuoteButton.addEventListener("click", showRandomQuote);
     categoryFilter.addEventListener("change", filterQuotes);
@@ -165,5 +172,5 @@ document.addEventListener("DOMContentLoaded", function () {
     fetchQuotesFromServer(); // Fetch quotes on page load
 
     // Periodically sync with the server
-    setInterval(fetchQuotesFromServer, serverSyncInterval); // Periodic sync
+    setInterval(syncQuotes, serverSyncInterval); // Periodic sync (calls syncQuotes function)
 });
