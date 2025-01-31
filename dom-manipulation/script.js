@@ -119,7 +119,7 @@ document.addEventListener("DOMContentLoaded", function () {
      * Sync local quotes with the server
      * Fetches new quotes periodically and updates local storage
      */
-    async function syncWithServer() {
+    async function fetchQuotesFromServer() {
         try {
             const response = await fetch(apiUrl);
             const serverQuotes = await response.json();
@@ -143,6 +143,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // Initialize form, categories, and start server sync
     createAddQuoteForm();
     populateCategories();
-    syncWithServer();
-    setInterval(syncWithServer, serverSyncInterval); // Periodic sync
+    fetchQuotesFromServer();
+    setInterval(fetchQuotesFromServer, serverSyncInterval); // Periodic sync
 });
