@@ -97,11 +97,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     /**
-     * Adds a new quote and updates storage and UI accordingly
+     * Adds a new quote, updates storage and UI, and posts data to the server
      */
-    function addQuote(text, category) {
+    async function addQuote(text, category) {
         if (text && category) {
-            quotes.push({ text, category });
+            const newQuote = { text, category };
+            quotes.push(newQuote);
             localStorage.setItem("quotes", JSON.stringify(quotes));
             alert("Quote added successfully!");
             populateCategories();
@@ -110,6 +111,19 @@ document.addEventListener("DOMContentLoaded", function () {
             // Clear input fields
             document.getElementById("newQuoteText").value = "";
             document.getElementById("newQuoteCategory").value = "";
+
+            // Post new quote to server
+            try {
+                const response = await fetch(apiUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ title: text, body: category, userId: 1 })
+                });
+                if (!response.ok) throw new Error("Failed to post data to server");
+                console.log("Quote successfully posted to server");
+            } catch (error) {
+                console.error("Error posting quote:", error);
+            }
         } else {
             alert("Please enter both a quote and a category.");
         }
