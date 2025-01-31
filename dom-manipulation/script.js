@@ -3,6 +3,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const quoteDisplay = document.getElementById("quoteDisplay");
     const newQuoteButton = document.getElementById("newQuote");
     const categoryFilter = document.getElementById("categoryFilter");
+    const serverSyncInterval = 30000; // Sync every 30 seconds
+    const apiUrl = "https://jsonplaceholder.typicode.com/posts"; // Mock API endpoint
 
     // Load quotes from local storage or use default quotes
     let quotes = JSON.parse(localStorage.getItem("quotes")) || [
@@ -104,8 +106,33 @@ document.addEventListener("DOMContentLoaded", function () {
             alert("Quote added successfully!");
             populateCategories();
             showRandomQuote();
+
+            // Clear input fields
+            document.getElementById("newQuoteText").value = "";
+            document.getElementById("newQuoteCategory").value = "";
         } else {
             alert("Please enter both a quote and a category.");
+        }
+    }
+
+    /**
+     * Sync local quotes with the server
+     * Fetches new quotes periodically and updates local storage
+     */
+    async function syncWithServer() {
+        try {
+            const response = await fetch(apiUrl);
+            const serverQuotes = await response.json();
+            
+            // Simulating merging server data by taking unique entries
+            const mergedQuotes = [...quotes, ...serverQuotes.map(q => ({ text: q.title, category: "Server" }))];
+            quotes = [...new Set(mergedQuotes.map(q => JSON.stringify(q)))].map(q => JSON.parse(q));
+            
+            localStorage.setItem("quotes", JSON.stringify(quotes));
+            populateCategories();
+            console.log("Quotes synced with server");
+        } catch (error) {
+            console.error("Error syncing with server:", error);
         }
     }
 
@@ -113,7 +140,9 @@ document.addEventListener("DOMContentLoaded", function () {
     newQuoteButton.addEventListener("click", showRandomQuote);
     categoryFilter.addEventListener("change", filterQuotes);
     
-    // Initialize form and categories
+    // Initialize form, categories, and start server sync
     createAddQuoteForm();
     populateCategories();
+    syncWithServer();
+    setInterval(syncWithServer, serverSyncInterval); // Periodic sync
 });
