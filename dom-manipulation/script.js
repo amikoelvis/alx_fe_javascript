@@ -154,15 +154,68 @@ document.addEventListener("DOMContentLoaded", function () {
         fetchQuotesFromServer();  // Calls fetchQuotesFromServer for syncing
     }
 
+    /**
+     * Creates a form for adding new quotes dynamically
+     */
+    function createAddQuoteForm() {
+        const form = document.createElement("form");
+        form.id = "addQuoteForm";
+
+        // Input field for the quote text
+        const quoteInput = document.createElement("input");
+        quoteInput.type = "text";
+        quoteInput.placeholder = "Enter new quote";
+        quoteInput.id = "newQuoteText";
+
+        // Input field for the category
+        const categoryInput = document.createElement("input");
+        categoryInput.type = "text";
+        categoryInput.placeholder = "Enter category";
+        categoryInput.id = "newQuoteCategory";
+
+        // Submit button
+        const addButton = document.createElement("button");
+        addButton.textContent = "Add Quote";
+        addButton.type = "submit";
+
+        form.appendChild(quoteInput);
+        form.appendChild(categoryInput);
+        form.appendChild(addButton);
+        document.body.appendChild(form);
+
+        // Event listener to handle form submission
+        form.addEventListener("submit", function (event) {
+            event.preventDefault();
+            addQuote(quoteInput.value.trim(), categoryInput.value.trim());
+        });
+    }
+
+    /**
+     * Adds a new quote and updates storage and UI accordingly
+     */
+    function addQuote(text, category) {
+        if (text && category) {
+            quotes.push({ text, category });
+            localStorage.setItem("quotes", JSON.stringify(quotes));
+            alert("Quote added successfully!");
+            populateCategories();
+            showRandomQuote();
+
+            // Clear input fields
+            document.getElementById("newQuoteText").value = "";
+            document.getElementById("newQuoteCategory").value = "";
+        } else {
+            alert("Please enter both a quote and a category.");
+        }
+    }
+
     // Event listeners for interactions
     newQuoteButton.addEventListener("click", showRandomQuote);
     categoryFilter.addEventListener("change", filterQuotes);
 
     // Initialize categories and start syncing
     populateCategories();
-    // Initial sync on page load (optional if you want to sync every time)
     fetchQuotesFromServer(); // Fetch quotes on page load
-
-    // Periodically sync with the server
+    createAddQuoteForm(); // Create the form to add quotes
     setInterval(syncQuotes, serverSyncInterval); // Periodic sync (calls syncQuotes function)
 });
