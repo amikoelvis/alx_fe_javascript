@@ -104,9 +104,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     /**
-     * Sync quotes with the server: fetch and update local storage
+     * Fetch quotes from the server and update local storage
      */
-    async function syncQuotes() {
+    async function fetchQuotesFromServer() {
         try {
             const response = await fetch(apiUrl); // Fetch data from the mock API
             const serverQuotes = await response.json(); // Parse the response JSON
@@ -162,8 +162,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // Initialize categories and start syncing
     populateCategories();
     // Initial sync on page load (optional if you want to sync every time)
-    syncQuotes(); // Fetch quotes on page load
+    fetchQuotesFromServer(); // Fetch quotes on page load
 
     // Periodically sync with the server
-    setInterval(syncQuotes, serverSyncInterval); // Periodic sync
+    setInterval(fetchQuotesFromServer, serverSyncInterval); // Periodic sync
 });
