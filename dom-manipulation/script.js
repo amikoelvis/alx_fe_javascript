@@ -3,7 +3,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const quoteDisplay = document.getElementById("quoteDisplay");
     const newQuoteButton = document.getElementById("newQuote");
     const categoryFilter = document.getElementById("categoryFilter");
-    const syncStatus = document.getElementById("syncStatus"); // Notification area for sync status
     const serverSyncInterval = 30000; // Sync every 30 seconds
     const apiUrl = "https://jsonplaceholder.typicode.com/posts"; // Mock API endpoint
 
@@ -14,13 +13,6 @@ document.addEventListener("DOMContentLoaded", function () {
         { text: "Success is a journey, not a destination.", category: "Success" },
         { text: "Happiness depends upon ourselves.", category: "Happiness" }
     ];
-
-    // Show sync status messages
-    function showSyncStatus(message) {
-        syncStatus.textContent = message;
-        syncStatus.style.display = "block";
-        setTimeout(() => { syncStatus.style.display = "none"; }, 5000); // Hide message after 5 seconds
-    }
 
     /**
      * Populates the category dropdown dynamically
@@ -93,12 +85,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 localStorage.setItem("quotes", JSON.stringify(quotes)); // Save updated quotes to localStorage
                 populateCategories(); // Re-populate the categories dropdown
-                showSyncStatus("New quote posted successfully!");
+                alert("New quote posted successfully!");  // Alert for successful post
             } else {
                 throw new Error("Failed to post quote.");
             }
         } catch (error) {
-            showSyncStatus("Error posting new quote. Please try again.");
+            alert("Error posting new quote. Please try again.");  // Alert for error during post
             console.error("Error posting quote:", error);
         }
     }
@@ -142,21 +134,21 @@ document.addEventListener("DOMContentLoaded", function () {
             // Re-populate the categories dropdown
             populateCategories();
 
-            // Show a notification about the successful sync
+            // Show an alert after syncing with the server
             if (conflictsResolved) {
-                showSyncStatus("Conflicts resolved and quotes synced with server.");
+                alert("Conflicts resolved and quotes synced with server!");
             } else {
-                showSyncStatus("Quotes synced with server successfully.");
+                alert("Quotes synced with server!");
             }
         } catch (error) {
             // Handle any errors that occur during the fetch operation
-            showSyncStatus("Error syncing with server. Please try again later.");
+            alert("Error syncing with server. Please try again later.");
             console.error("Error syncing with server:", error);
         }
     }
 
     /**
-     * Sync quotes function (Reintroduced as per request)
+     * Sync quotes function
      */
     function syncQuotes() {
         fetchQuotesFromServer();  // Calls fetchQuotesFromServer for syncing
