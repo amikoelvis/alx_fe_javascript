@@ -221,6 +221,35 @@ document.addEventListener("DOMContentLoaded", function () {
         link.click();  // Programmatically click the link to trigger download
     }
 
+    /**
+     * Import quotes from a JSON file
+     */
+    function importFromJsonFile(event) {
+        const file = event.target.files[0];  // Get the selected file
+        if (file && file.type === "application/json") {
+            const reader = new FileReader();  // Create a FileReader object
+            reader.onload = function(e) {
+                try {
+                    const importedQuotes = JSON.parse(e.target.result);  // Parse the JSON data
+                    if (Array.isArray(importedQuotes)) {
+                        quotes = importedQuotes;  // Update the quotes array
+                        localStorage.setItem("quotes", JSON.stringify(quotes));  // Update localStorage
+                        populateCategories();  // Re-populate the categories dropdown
+                        alert("Quotes imported successfully!");
+                    } else {
+                        alert("Invalid file format. Please upload a valid JSON file.");
+                    }
+                } catch (error) {
+                    alert("Error importing quotes. Please try again.");
+                    console.error("Error reading file:", error);
+                }
+            };
+            reader.readAsText(file);  // Read the file as text
+        } else {
+            alert("Please upload a valid JSON file.");
+        }
+    }
+
     // Event listeners for interactions
     newQuoteButton.addEventListener("click", showRandomQuote);
     categoryFilter.addEventListener("change", filterQuotes);
@@ -230,6 +259,13 @@ document.addEventListener("DOMContentLoaded", function () {
     exportButton.textContent = "Export Quotes to JSON";
     exportButton.addEventListener("click", exportToJsonFile);  // Trigger export function
     document.body.appendChild(exportButton);  // Append the export button to the page
+
+    // Create import file input for uploading JSON file
+    const importButton = document.createElement("input");
+    importButton.type = "file";
+    importButton.accept = ".json";
+    importButton.addEventListener("change", importFromJsonFile);  // Trigger import function
+    document.body.appendChild(importButton);  // Append the import button to the page
 
     // Initialize categories and start syncing
     populateCategories();
