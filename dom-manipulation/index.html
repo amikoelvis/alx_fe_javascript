@@ -19,6 +19,11 @@
     <!-- Export Button -->
     <button onclick="exportToJsonFile()">Export Quotes</button>
   </div>
+
+  <select id="categoryFilter" onchange="filterQuotes()">
+    <option value="all">All Categories</option>
+    <!-- Dynamically populated categories -->
+  </select>
   
   <script src="script.js"></script>
 </body>
