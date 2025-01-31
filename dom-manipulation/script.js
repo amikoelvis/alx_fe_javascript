@@ -67,8 +67,61 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     /**
-     * Syncs local quotes with the server, resolving conflicts
+     * Post a new quote to the server and update local data accordingly
      */
+    async function postQuoteToServer(text, category) {
+        const newQuote = { title: text, body: category, userId: 1 }; // Structure for JSONPlaceholder
+
+        try {
+            const response = await fetch(apiUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(newQuote) // Send data as JSON
+            });
+
+            if (response.ok) {
+                const postedQuote = await response.json();
+                console.log("Posted Quote:", postedQuote);
+
+                // Update local data with the newly posted quote
+                quotes.push({
+                    text: postedQuote.title,
+                    category: postedQuote.body
+                });
+
+                localStorage.setItem("quotes", JSON.stringify(quotes)); // Save updated quotes to localStorage
+                populateCategories(); // Re-populate the categories dropdown
+                showSyncStatus("New quote posted successfully!");
+            } else {
+                throw new Error("Failed to post quote.");
+            }
+        } catch (error) {
+            showSyncStatus("Error posting new quote. Please try again.");
+            console.error("Error posting quote:", error);
+        }
+    }
+
+    /**
+     * Adds a new quote to the local storage and displays it
+     */
+    function addQuote(text, category) {
+        if (text && category) {
+            quotes.push({ text, category });
+            localStorage.setItem("quotes", JSON.stringify(quotes));
+            alert("Quote added successfully!");
+            populateCategories();
+            showRandomQuote();
+
+            // Post the new quote to the server
+            postQuoteToServer(text, category);
+        } else {
+            alert("Please enter both a quote and a category.");
+        }
+    }
+
+    // Periodically sync with the server
     async function syncQuotes() {
         try {
             const response = await fetch(apiUrl); // Fetch data from the mock API
@@ -112,75 +165,15 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    /**
-     * Fetches quotes from the server and updates local quotes
-     */
-    async function fetchQuotesFromServer() {
-        try {
-            const response = await fetch(apiUrl); // Fetch data from the mock API
-            const serverQuotes = await response.json(); // Parse the response JSON
-            
-            // Merge server quotes with local quotes, ensuring no duplicates
-            let mergedQuotes = [...quotes];
-
-            serverQuotes.forEach(serverQuote => {
-                const existingIndex = quotes.findIndex(q => q.text === serverQuote.title);
-                if (existingIndex === -1) {
-                    // If the quote doesn't exist locally, add it
-                    mergedQuotes.push({
-                        text: serverQuote.title,
-                        category: "Server"
-                    });
-                } else {
-                    // If the quote exists, update it from the server
-                    mergedQuotes[existingIndex] = {
-                        text: serverQuote.title,
-                        category: "Server"
-                    };
-                }
-            });
-
-            // Remove duplicates based on the text field
-            quotes = [...new Set(mergedQuotes.map(q => JSON.stringify(q)))].map(q => JSON.parse(q));
-
-            // Save the updated quotes back to localStorage
-            localStorage.setItem("quotes", JSON.stringify(quotes));
-
-            // Re-populate the categories dropdown
-            populateCategories();
-
-            // Show a notification about the successful sync
-            showSyncStatus("Quotes fetched from server and updated.");
-        } catch (error) {
-            // Handle any errors that occur during the fetch operation
-            showSyncStatus("Error fetching quotes from server. Please try again later.");
-            console.error("Error fetching quotes from server:", error);
-        }
-    }
-
-    /**
-     * Adds a new quote and updates storage and UI accordingly
-     */
-    function addQuote(text, category) {
-        if (text && category) {
-            quotes.push({ text, category });
-            localStorage.setItem("quotes", JSON.stringify(quotes));
-            alert("Quote added successfully!");
-            populateCategories();
-            showRandomQuote();
-        } else {
-            alert("Please enter both a quote and a category.");
-        }
-    }
-
-    // Periodically sync with the server
-    setInterval(syncQuotes, serverSyncInterval);
-
     // Event listeners for interactions
     newQuoteButton.addEventListener("click", showRandomQuote);
     categoryFilter.addEventListener("change", filterQuotes);
 
     // Initialize categories and start syncing
     populateCategories();
-    syncQuotes(); // Initial sync on page load
+    // Initial sync on page load (optional if you want to sync every time)
+    syncQuotes(); 
+
+    // Periodically sync with the server
+    setInterval(syncQuotes, serverSyncInterval);
 });
