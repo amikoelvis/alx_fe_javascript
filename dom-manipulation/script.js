@@ -67,15 +67,53 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     /**
-     * Fetch quotes from the server and update local storage
+     * Post a new quote to the server and update local data accordingly
      */
-    async function fetchQuotesFromServer() {
+    async function postQuoteToServer(text, category) {
+        const newQuote = { title: text, body: category, userId: 1 }; // Structure for JSONPlaceholder
+
+        try {
+            const response = await fetch(apiUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(newQuote) // Send data as JSON
+            });
+
+            if (response.ok) {
+                const postedQuote = await response.json();
+                console.log("Posted Quote:", postedQuote);
+
+                // Update local data with the newly posted quote
+                quotes.push({
+                    text: postedQuote.title,
+                    category: postedQuote.body
+                });
+
+                localStorage.setItem("quotes", JSON.stringify(quotes)); // Save updated quotes to localStorage
+                populateCategories(); // Re-populate the categories dropdown
+                showSyncStatus("New quote posted successfully!");
+            } else {
+                throw new Error("Failed to post quote.");
+            }
+        } catch (error) {
+            showSyncStatus("Error posting new quote. Please try again.");
+            console.error("Error posting quote:", error);
+        }
+    }
+
+    /**
+     * Sync quotes with the server: fetch and update local storage
+     */
+    async function syncQuotes() {
         try {
             const response = await fetch(apiUrl); // Fetch data from the mock API
             const serverQuotes = await response.json(); // Parse the response JSON
             
             // Merge server quotes with local quotes, ensuring no duplicates
             let mergedQuotes = [...quotes];
+            let conflictsResolved = false;
 
             serverQuotes.forEach(serverQuote => {
                 const existingIndex = quotes.findIndex(q => q.text === serverQuote.title);
@@ -86,11 +124,12 @@ document.addEventListener("DOMContentLoaded", function () {
                         category: "Server"
                     });
                 } else {
-                    // If the quote exists, update it from the server
+                    // If the quote exists, update it from the server (Conflict Resolution)
                     mergedQuotes[existingIndex] = {
                         text: serverQuote.title,
                         category: "Server"
                     };
+                    conflictsResolved = true;
                 }
             });
 
@@ -104,7 +143,11 @@ document.addEventListener("DOMContentLoaded", function () {
             populateCategories();
 
             // Show a notification about the successful sync
-            showSyncStatus("Quotes synced with server successfully.");
+            if (conflictsResolved) {
+                showSyncStatus("Conflicts resolved and quotes synced with server.");
+            } else {
+                showSyncStatus("Quotes synced with server successfully.");
+            }
         } catch (error) {
             // Handle any errors that occur during the fetch operation
             showSyncStatus("Error syncing with server. Please try again later.");
@@ -119,8 +162,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // Initialize categories and start syncing
     populateCategories();
     // Initial sync on page load (optional if you want to sync every time)
-    fetchQuotesFromServer(); // Fetch quotes on page load
+    syncQuotes(); // Fetch quotes on page load
 
     // Periodically sync with the server
-    setInterval(fetchQuotesFromServer, serverSyncInterval); // Periodic sync
+    setInterval(syncQuotes, serverSyncInterval); // Periodic sync
 });
